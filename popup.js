@@ -1,4 +1,4 @@
-const API_KEY = 'cc84d018697c4ba993da7c48de25dea5';
+import { API_KEY } from './config.js';
 const TEAM_ID = 81; 
 const BASE_URL = 'https://api.football-data.org/v4';
 const REFRESH_INTERVAL = 60 * 1000; 
@@ -13,8 +13,17 @@ function setLoading() {
 function setError() {
   document.getElementById('root').innerHTML = `
     <div class="header">FC Barcelona</div>
-    <div class="section">Error loading data. Please try again later.</div>
+    <div class="section">
+      Error loading data. Please try again later.<br>
+      <button id="see-why-btn" style="margin-top:12px;padding:8px 18px;background:#d32f2f;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;">See why</button>
+    </div>
   `;
+  const btn = document.getElementById('see-why-btn');
+  if (btn) {
+    btn.onclick = () => {
+      window.open('https://github.com/ShiiiivanshSingh/fcb-score-tracker#️-api-key-setup', '_blank');
+    };
+  }
 }
 
 function formatMatchTime(match) {
@@ -50,7 +59,9 @@ function render({ live, fixtures, results }) {
         `<div class="result"><span class="team">vs ${r.awayTeam.id === TEAM_ID ? r.homeTeam.shortName : r.awayTeam.shortName}</span><span class="score">${r.score.fullTime.home}-${r.score.fullTime.away} ${r.score.winner === 'DRAW' ? 'D' : (r.score.winner === 'HOME_TEAM' && r.homeTeam.id === TEAM_ID) || (r.score.winner === 'AWAY_TEAM' && r.awayTeam.id === TEAM_ID) ? 'W' : 'L'}</span></div>`
       ).join('') : '<div class="status">No recent results</div>'}
     </div>
-          <img src="fcb.svg" alt="FC Barcelona" class="logo" height="50" width="50" style="display: block; margin: 0 auto;">
+          <a href="https://github.com/ShiiiivanshSingh/fcb-score-tracker" target="_blank" rel="noopener noreferrer">
+            <img src="fcb.svg" alt="FC Barcelona" class="logo" height="50" width="50" style="display: block; margin: 0 auto;">
+          </a>
 
   `;
 }
