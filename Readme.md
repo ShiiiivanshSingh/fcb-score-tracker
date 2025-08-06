@@ -9,7 +9,8 @@
    <br>
   <a href="https://github.com/ShiiiivanshSingh/fcb-score-tracker/releases/tag/build"><img src="https://img.shields.io/badge/Chrome-Extension-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Chrome Extension"></a>
 
-  <a href="#-getting-started"><img src="https://img.shields.io/badge/🔧%20How%20to%20Install-FF5733?style=for-the-badge" alt="How to Install"></a>
+  <a href="#-getting-started"><img src="https://img.shields.io/badge/🔧%20How%20to%20Install-FF1411?style=for-the-badge" alt="How to Install"></a> <br>
+   <a href="https://github.com/ShiiiivanshSingh/fcb-score-tracker?tab=readme-ov-file#%EF%B8%8F-api-key-setup"> <img src="https://img.shields.io/badge/⚠️%20API%20Help%20%26%20Setup-FF4136?style=for-the-badge&logo=github" alt="API Key Help"> </a>
 
   
 </div>
