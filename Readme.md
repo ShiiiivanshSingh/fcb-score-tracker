@@ -1,7 +1,7 @@
 <a name="readme-top"></a>
 
 <div align="center">
-  <h1>FC Barcelona Live Score Tracker ⚽🔵🔴</h1>
+  <h1>FC Barcelona Live Score Tracker 🔵🔴</h1>
   <p>A minimal browser extension for real-time FC Barcelona scores, fixtures, and results — in pure Blaugrana style!</p>
   
   <a href="https://github.com/ShiiiivanshSingh/fcb-score-tracker/releases/tag/build"><img src="https://img.shields.io/badge/Chrome-Extension-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Chrome Extension"></a>
