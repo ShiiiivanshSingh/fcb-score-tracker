@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "FC Barcelona Live Tracker",
+  "version": "1.0",
+  "description": "Minimal extension to track FC Barcelona live scores, match time, fixtures, and results.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "32": "icon32.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://api.football-data.org/*",
+    "https://www.thesportsdb.com/*"
+  ]
+} 
