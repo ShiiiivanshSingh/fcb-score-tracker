@@ -1,7 +1,7 @@
 <a name="readme-top"></a>
 
 <div align="center">
-  <h1>FC Barcelona Live Tracker ⚽️🔵🔴</h1>
+  <h1>FC Barcelona Live Score Tracker ⚽🔵🔴</h1>
   <p>A minimal browser extension for real-time FC Barcelona scores, fixtures, and results — in pure Blaugrana style!</p>
   
   <a href="https://github.com/ShiiiivanshSingh/fcb-score-tracker/archive/refs/heads/main.zip"><img src="https://img.shields.io/badge/Chrome-Extension-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Chrome Extension"></a>
@@ -12,6 +12,13 @@
 </div>
 
 Welcome to FC Barcelona Live Tracker! Instantly see live scores, match time, upcoming fixtures, and recent results for Barça — right from your browser. No ads, no clutter, just pure football.
+
+<div align="center">
+ <h1>Preview ⚽️</h1>
+
+
+  <img src="preview.gif" alt="Preview" width="400"/>
+</div>
 
 ## ✨ Key Features
 
@@ -33,9 +40,8 @@ Welcome to FC Barcelona Live Tracker! Instantly see live scores, match time, upc
 
 
 
-## Preview
 
-![Preview of Extension](preview.gif)
+
 
 ## 🚀 Getting Started
 
