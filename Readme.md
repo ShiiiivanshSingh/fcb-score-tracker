@@ -24,6 +24,24 @@ Welcome to FC Barcelona Live Tracker! Instantly see live scores, match time, upc
   <img src="preview.gif" alt="Preview" width="400"/>
 </div>
 
+
+
+## why i made this
+
+ok i want to confess something, most oftimes i make smth i dont really interact with u, yes you. this makes my whole profile feel very robotic, no personality or soul while it may seem like it but thats not the case ive realised all i want i s perfection and that cpmes with a cost the cost of haviong no soul, no personality. so here it is. i made this  because a i love barca and b i was bored at home, i hope at least one person will find it useful and even if u dont honestly i doesnt matter, ive been buildong stuff for soo long but ive always felt like i didnt put any personality to it, so thats why im writing this as a message to myself to remind me to put myself out there no matter how much this world will clown me for it , peace.
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## ✨ Key Features
 
 * 🟦🔴 **Barça!!**<br>Beautiful, modern UI in FC Barcelona's iconic blue and garnet.
