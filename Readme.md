@@ -3,7 +3,7 @@
 <div align="center">
   
   <h1>FC Barcelona Live Score Tracker 🔵🔴 </h1>
-  
+   
   <p>A minimal browser extension for real-time FC Barcelona scores, fixtures, and results — in pure Blaugrana style!</p>
    <img src="fcb.svg" alt="Preview" width="80" height="80"/>
    <br>
