@@ -21,7 +21,8 @@ Welcome to FC Barcelona Live Tracker! Instantly see live scores, match time, upc
  <h1>Preview ⚽️</h1>
 
 
-  <img src="preview.gif" alt="Preview" width="400"/>
+  <img width="404" height="704" alt="image" src="https://github.com/user-attachments/assets/40ba1052-696a-44a4-8003-e97924e4175b" />
+
 </div>
 
 
