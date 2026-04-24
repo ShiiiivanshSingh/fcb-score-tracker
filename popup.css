@@ -1,7 +1,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  width: 310px;
+  width: 400px;
   background: #111116;
   font-family: 'Montserrat', 'Segoe UI', sans-serif;
   color: #f0f0f0;
@@ -31,10 +31,11 @@ body {
   pointer-events: none;
 }
 .header-crest {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6));
 }
 .header-text { flex: 1; min-width: 0; }
 .header-title {
@@ -212,6 +213,13 @@ body {
 
 /* ── LIVE SCORE ── */
 .live-inner { padding: 10px 12px 11px; }
+.live-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 9px;
+}
 .live-comp-label {
   font-size: 8px;
   font-weight: 700;
@@ -219,7 +227,41 @@ body {
   letter-spacing: 0.2em;
   text-transform: uppercase;
   opacity: 0.75;
-  margin-bottom: 9px;
+}
+/* Status pills */
+.live-status-pill {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.live-status-pill.in-play {
+  background: rgba(255, 50, 50, 0.18);
+  color: #ff5252;
+  border: 1px solid rgba(255, 50, 50, 0.35);
+  animation: pill-pulse 1.4s ease-in-out infinite;
+}
+.live-status-pill.half-time {
+  background: rgba(255, 214, 0, 0.15);
+  color: #FFD600;
+  border: 1px solid rgba(255, 214, 0, 0.3);
+}
+.live-status-pill.paused {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.live-status-pill.finished {
+  background: rgba(34,197,94,0.12);
+  color: #22c55e;
+  border: 1px solid rgba(34,197,94,0.25);
+}
+@keyframes pill-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
 }
 .live-scoreline {
   display: flex;
@@ -452,3 +494,185 @@ body {
   overflow: hidden;
 }
 .stripe span { flex: 1; }
+
+/* ── ICON BUTTON (gear) ── */
+.icon-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 5px;
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0; padding: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+.icon-btn:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.25); }
+.icon-btn svg { width: 12px; height: 12px; }
+.icon-btn.active { background: rgba(255,214,0,0.15); border-color: rgba(255,214,0,0.35); }
+.icon-btn.active svg { stroke: #FFD600; }
+
+/* ── SETTINGS PANEL ── */
+.settings-panel {
+  background: #16161b;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 4px 0 6px;
+  animation: slideDown 0.18s ease;
+}
+@keyframes slideDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+.settings-title {
+  font-size: 8.5px; font-weight: 700; letter-spacing: 0.2em;
+  text-transform: uppercase; color: rgba(255,255,255,0.25);
+  padding: 6px 12px 4px;
+}
+.settings-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 4px 0;
+}
+.settings-comp-pills {
+  padding: 4px 12px 8px;
+  gap: 5px;
+}
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 12px; cursor: pointer;
+  transition: background 0.12s;
+}
+.settings-row:hover { background: rgba(255,255,255,0.04); }
+.settings-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.7); }
+/* Toggle switch */
+.toggle-wrap { position: relative; width: 28px; height: 15px; flex-shrink: 0; }
+.toggle-wrap input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-slider {
+  position: absolute; inset: 0; background: rgba(255,255,255,0.12);
+  border-radius: 8px; transition: background 0.2s;
+}
+.toggle-slider::after {
+  content: ''; position: absolute; left: 2px; top: 2px;
+  width: 11px; height: 11px; border-radius: 50%; background: #fff;
+  transition: transform 0.2s;
+}
+.toggle-wrap input:checked + .toggle-slider { background: #004D98; }
+.toggle-wrap input:checked + .toggle-slider::after { transform: translateX(13px); }
+
+/* ── GOAL TOAST ── */
+.goal-toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: #1a1a22; border: 1px solid rgba(255,214,0,0.4);
+  border-radius: 10px; padding: 8px 14px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 600; color: #f0f0f0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  white-space: nowrap; z-index: 999;
+}
+.goal-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.goal-toast.barca { border-color: rgba(255,214,0,0.5); }
+.goal-toast.against { border-color: rgba(239,68,68,0.4); }
+.toast-icon { font-size: 14px; }
+.toast-text strong { color: #FFD600; }
+.goal-toast.against .toast-text strong { color: #ef4444; }
+
+/* ── COMPETITION FILTER PILLS ── */
+.comp-pills {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  padding: 0 2px;
+}
+.comp-pill {
+  font-family: inherit; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 20px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.45); cursor: pointer;
+  transition: all 0.15s;
+}
+.comp-pill:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+.comp-pill.active {
+  background: rgba(0,77,152,0.35); border-color: rgba(0,77,152,0.7);
+  color: #7fb3f5;
+}
+
+/* ── SHOW MORE BUTTON ── */
+.show-more-btn {
+  display: block; width: 100%; padding: 6px 12px;
+  background: none; border: none; border-top: 1px solid rgba(255,255,255,0.05);
+  font-family: inherit; font-size: 9.5px; font-weight: 700;
+  color: rgba(255,255,255,0.28); letter-spacing: 0.08em;
+  cursor: pointer; text-align: center; transition: color 0.15s;
+}
+.show-more-btn:hover { color: rgba(255,255,255,0.55); }
+
+/* ── CLICKABLE ROWS ── */
+.row-btn { cursor: pointer; transition: background 0.12s; width: 100%; text-align: left; }
+.row-btn:hover { background: rgba(255,255,255,0.04); }
+
+/* ── LINEUP CARD ── */
+.lineup-card { overflow: visible; }
+.lineup-cols {
+  display: flex; padding: 6px 10px 10px; gap: 0;
+}
+.lineup-col { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.lineup-divider { width: 1px; background: rgba(255,255,255,0.07); margin: 0 8px; flex-shrink: 0; }
+.lineup-team-badge {
+  font-size: 8px; font-weight: 800; letter-spacing: 0.14em;
+  text-transform: uppercase; padding: 2px 6px; border-radius: 4px;
+  margin-bottom: 4px; display: inline-block;
+}
+.barca-side { background: rgba(0,77,152,0.35); color: #7fb3f5; }
+.opp-side { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.45); }
+.lineup-player { display: flex; align-items: center; gap: 5px; }
+.lineup-num { font-size: 8.5px; font-weight: 700; color: rgba(255,255,255,0.28); min-width: 14px; text-align: right; }
+.lineup-name { font-size: 9.5px; font-weight: 600; color: rgba(255,255,255,0.75); }
+.opp-col .lineup-name { color: rgba(255,255,255,0.4); }
+.lineup-empty { font-size: 9px; color: rgba(255,255,255,0.2); }
+.live-lineup-row { margin-top: 8px; }
+.lineup-toggle-btn {
+  font-family: inherit; font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.45); border-radius: 4px;
+  padding: 3px 9px; cursor: pointer; transition: all 0.15s;
+}
+.lineup-toggle-btn:hover { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
+
+/* ── VENUE / REFEREE LINE ── */
+.live-meta-line {
+  font-size: 8.5px; color: rgba(255,255,255,0.28); font-weight: 500;
+  margin-top: 6px; letter-spacing: 0.02em;
+}
+
+/* ── CARD EVENTS (yellow / red) ── */
+.event-yellow { color: #FFD600; opacity: 0.85; }
+.event-against.event-yellow { opacity: 0.45; }
+.event-red { color: #ef4444; }
+.event-against.event-red { opacity: 0.55; }
+
+/* ── TOP SCORERS ── */
+.scorers-row {
+  display: flex; align-items: center;
+  padding: 5px 12px; border-top: 1px solid rgba(255,255,255,0.05);
+}
+.scorers-row.no-border { border-top: none; }
+.scorer-rank { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.25); min-width: 16px; }
+.scorer-name { flex: 1; font-size: 11px; font-weight: 600; color: #f0f0f0; }
+.scorer-goals { font-size: 11px; font-weight: 700; color: #FFD600; min-width: 20px; text-align: right; }
+.scorer-lbl { font-size: 7.5px; font-weight: 600; color: rgba(255,255,255,0.28); letter-spacing: 0.08em; text-transform: uppercase; margin-left: 2px; }
+
+/* ── UCL STANDINGS TABS ── */
+.standings-tabs {
+  display: flex; gap: 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 0 12px;
+}
+.standings-tab {
+  font-family: inherit; font-size: 8px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  padding: 5px 8px 4px; background: none; border: none;
+  color: rgba(255,255,255,0.28); cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.standings-tab:hover { color: rgba(255,255,255,0.5); }
+.standings-tab.active { color: #FFD600; border-bottom-color: #FFD600; }
+
