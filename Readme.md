@@ -1,164 +1,167 @@
 <a name="readme-top"></a>
 
 <div align="center">
-  
-  <h1>FC Barcelona Live Score Tracker 🔵🔴 </h1>
-   
-  <p>A minimal browser extension for real-time FC Barcelona scores, fixtures, and results — in pure Blaugrana style!</p>
-   <img src="fcb.svg" alt="Preview" width="80" height="80"/>
-   <br>
-  <a href="https://github.com/ShiiiivanshSingh/fcb-score-tracker/releases/tag/build"><img src="https://img.shields.io/badge/Chrome-Extension-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Chrome Extension"></a>
 
-  <a href="#-getting-started"><img src="https://img.shields.io/badge/🔧%20How%20to%20Install-FF1411?style=for-the-badge" alt="How to Install"></a> <br>
-   <a href="https://github.com/ShiiiivanshSingh/fcb-score-tracker?tab=readme-ov-file#%EF%B8%8F-api-key-setup"> <img src="https://img.shields.io/badge/⚠️%20API%20Help%20%26%20Setup-FF4136?style=for-the-badge&logo=github" alt="API Key Help"> </a>
+  <img src="fcb.svg" alt="FC Barcelona Crest" width="72" height="72"/>
 
-  
-</div>
+  <h1>FC Barcelona Live Tracker 🔵🔴</h1>
 
-Welcome to FC Barcelona Live Tracker! Instantly see live scores, match time, upcoming fixtures, and recent results for Barça — right from your browser. No ads, no clutter, just pure football.
+  <p>A feature-rich Chrome extension for real-time FC Barcelona scores, fixtures, standings, and more — in pure Blaugrana style.</p>
 
-<div align="center">
- <h1>Preview ⚽️</h1>
-
-
-  <img width="404" height="704" alt="image" src="https://github.com/user-attachments/assets/40ba1052-696a-44a4-8003-e97924e4175b" />
+  <a href="https://github.com/ShiiiivanshSingh/fcb-score-tracker/releases/tag/final"><img src="https://img.shields.io/badge/Chrome-Extension-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Chrome Extension"></a>
+  <a href="#-getting-started"><img src="https://img.shields.io/badge/🔧%20How%20to%20Install-FF1411?style=for-the-badge" alt="How to Install"></a>
+  <a href="#️-api-key-setup"><img src="https://img.shields.io/badge/⚠️%20API%20Key%20Setup-FF4136?style=for-the-badge&logo=github" alt="API Key Setup"></a>
 
 </div>
 
-
+---
 
 ## why i made this
 
-ok i want to confess something, most oftimes i make smth i dont really interact with u, yes you. this makes my whole profile feel very robotic, no personality or soul while it may seem like it but thats not the case ive realised all i want i s perfection and that cpmes with a cost the cost of haviong no soul, no personality. so here it is. i made this  because a i love barca and b i was bored at home, i hope at least one person will find it useful and even if u dont honestly i doesnt matter, ive been buildong stuff for soo long but ive always felt like i didnt put any personality to it, so thats why im writing this as a message to myself to remind me to put myself out there no matter how much this world will clown me for it , peace.
+ok i want to confess something — most of the time when i make something i don't really interact with you. yes, you. this makes my whole profile feel very robotic, no personality or soul, while it may seem like it, but that's not the case. i've realised all i want is perfection and that comes with a cost — the cost of having no soul, no personality.
 
+so here it is. i made this because (a) i love barça and (b) i was bored at home. i hope at least one person finds it useful, and even if you don't — honestly it doesn't matter. i've been building stuff for so long but always felt like i didn't put any personality into it. so that's why i'm writing this, as a message to myself: put yourself out there no matter how much this world will clown you for it. peace. ✌️
 
+---
 
+## ✨ Features
 
+| | Feature | Description |
+|---|---|---|
+| 🟡 | **Live Score** | Real-time score, match minute, and status pill (LIVE / HT / FT) with auto-refresh |
+| ⚽ | **Goal Events** | In-popup animated toast + live event strip showing goalscorers, OGs, and penalties |
+| 🟥 | **Card Events** | Yellow ⚠️ and red 🟥 card bookings shown inline with goals in the live strip |
+| 🏟 | **Venue & Referee** | Stadium name and referee shown on the live card |
+| 👕 | **Starting XI** | Tap "Lineup ▼" during a live match to expand both teams' starting elevens |
+| 📅 | **Upcoming Fixtures** | Next scheduled matches with countdown timer and H/A indicator |
+| 🏁 | **Recent Results** | Last results with score, W/D/L badge, and "Show more" to expand up to 20 |
+| 📊 | **La Liga Standings** | Barça's current La Liga position, played/won/drawn/lost/points |
+| 🏆 | **UCL Standings** | Champions League standing with a La Liga / UCL tab switcher |
+| ⚽ | **Top Scorers** | Barça's top 5 La Liga goalscorers for the season |
+| 📈 | **Form Guide** | Recent form dots (W/D/L) calculated from last results |
+| 🔍 | **Competition Filter** | Filter fixtures and results by competition (La Liga, UCL, Copa…) from the ⚙️ settings panel |
+| 🔔 | **Smart Notifications** | Background push notifications for kick-off, half time, full time, goals — individually toggleable |
+| ⏰ | **Pre-Match Alarm** | Notification 15 minutes before kick-off |
+| 🔗 | **Clickable Rows** | Click any fixture or result to open a Google search for that match |
+| ⚡ | **Rate-Limit Safe Cache** | API responses cached for 60 seconds — popup opens are instant and never hit your rate limit |
 
+---
 
-
-
-
-
-
-
-
-## ✨ Key Features
-
-* 🟦🔴 **Barça!!**<br>Beautiful, modern UI in FC Barcelona's iconic blue and garnet.
-* 🟡 **Live Score & Match Time**<br>See the current score and match status (with auto-refresh).
-* 📅 **Upcoming Fixtures**<br>Next 3 scheduled matches, always up to date.
-* 🏁 **Recent Results**<br>Past 3 match results, with win/draw/loss indicator.
-* ⚡ **Super Fast**<br>Minimal, clutter-free, and refreshes automatically.
-
-## 🔧 Technologies Used
+## 📸 Preview
 
 <div align="center">
-  <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML">
-  <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3">
-  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript">
-  <img src="https://img.shields.io/badge/Football%20Data%20API-004D98?style=for-the-badge" alt="Football Data API">
+  <img width="404" alt="FC Barcelona Live Tracker Preview" src="https://github.com/user-attachments/assets/40ba1052-696a-44a4-8003-e97924e4175b" />
 </div>
 
+---
 
+## 🛡️ API Key Setup
 
+This extension uses the free [football-data.org](https://www.football-data.org/) API.
 
+**Free tier:** 10 requests/minute — the extension is designed to stay well within this limit via response caching.
 
+### Steps
 
+1. **Sign up** at [football-data.org](https://www.football-data.org/) and copy your API key from the dashboard.
+
+2. **Create `config.js`** in the extension directory:
+   ```js
+   // config.js
+   export const API_KEY = 'YOUR_API_KEY_HERE';
+   ```
+
+3. **`config.js` is in `.gitignore`** — it will never be committed to your repo. Keep your key private.
+
+4. **Reload the extension** at `chrome://extensions/` after adding the file.
+
+> If you see a "Could not load data" or "API key missing" error in the popup, click **"See why ↗"** which links directly here.
+
+---
 
 ## 🚀 Getting Started
 
 ### Installation
-1. [Download the extension files](https://github.com/ShiiiivanshSingh/fcb-score-tracker/archive/refs/heads/main.zip)
-2. Open Chrome and go to:
-   ```bash
+
+1. [**Download the ZIP**](https://github.com/ShiiiivanshSingh/fcb-score-tracker/archive/refs/heads/main.zip) and extract it.
+2. Open Chrome and navigate to:
+   ```
    chrome://extensions/
    ```
-3. Enable Developer Mode.
-4. Click "Load unpacked" and select the extension directory.
-5. The Barça icon will appear in your browser toolbar.
+3. Enable **Developer Mode** (top-right toggle).
+4. Click **"Load unpacked"** and select the extracted folder.
+5. The Barça crest 🔵🔴 appears in your toolbar — you're done.
 
-### Usage
-1. Click the extension icon to open the popup
-2. Instantly see live score, match time, fixtures, and results
-3. Enjoy the beautiful Blaugrana UI and real-time updates!
+### Requirements
 
-### Prerequisites
-- Any Chromium-based browser (Chrome, Edge, Brave, etc.)
+- Any Chromium-based browser (Chrome, Edge, Brave, Arc, etc.)
+- A free [football-data.org](https://www.football-data.org/) API key
 
-## 📅 What You Get
+---
 
-* **Live Score** — Real-time score and match time for FC Barcelona
-* **Upcoming Fixtures** — Next 3 matches, always current
-* **Recent Results** — Last 3 results, with W/D/L
-* **No Ads, No News, No Distractions**
+## 🛠️ Troubleshooting
 
-## 🎯 Features Coming Soon
+| Problem | Likely cause | Fix |
+|---|---|---|
+| "API key missing or invalid" | `config.js` missing or wrong key | Re-check [API Key Setup](#️-api-key-setup) |
+| Data not updating | Rate limited (> 10 req/min) | Wait 60 s, the cache will expire and retry |
+| UCL standings empty | Barça not currently in a UCL group stage | Expected — only shows when data is available |
+| Lineup not showing | API doesn't return lineups until closer to kick-off | Check back nearer match time |
 
-* 📦 More customization options
-* 🌐 Multi-language support
-* 📱 Mobile-friendly popup
+---
+
+## 🔧 Tech Stack
+
+<div align="center">
+  <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5">
+  <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3">
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript">
+  <img src="https://img.shields.io/badge/Chrome%20Extensions%20API-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Chrome Extensions">
+  <img src="https://img.shields.io/badge/football--data.org-004D98?style=for-the-badge" alt="Football Data API">
+</div>
+
+**Architecture:**
+- `manifest.json` — MV3 extension manifest
+- `popup.html / popup.css / popup.js` — the extension popup UI
+- `background.js` — service worker for background polling and push notifications
+- `settings.js` — shared notification preference helpers (`chrome.storage.local`)
+- `config.js` — your API key (not committed, gitignored)
+
+---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Here's how you can help:
-
 1. Fork the [repository](https://github.com/ShiiiivanshSingh/fcb-score-tracker/)
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Make your changes
-4. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-5. Push to the branch (`git push origin feature/AmazingFeature`)
-6. Open a Pull Request
+2. Create your feature branch: `git checkout -b feature/my-feature`
+3. Commit your changes: `git commit -m 'Add my feature'`
+4. Push to the branch: `git push origin feature/my-feature`
+5. Open a Pull Request
+
+---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
-## 🔗 Connect With the Developer
+---
+
+## 🔗 Connect
 
 <div align="center">
   <a href="https://github.com/ShiiiivanshSingh"><img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
   <a href="https://www.linkedin.com/in/shivansh-pratap-singh-23b3b92b1"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
   <a href="https://x.com/de_mirage_fan"><img src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" alt="Twitter"></a>
 </div>
-<div align="center">
-  <a href="https://github.com/ShiiiivanshSingh/fcb-score-tracker/archive/refs/heads/main.zip"><img src="https://img.shields.io/badge/🔽%20Download%20Extension-FF5733?style=for-the-badge" alt="Download Extension"></a>
-  <a href="https://github.com/ShiiiivanshSingh/fcb-score-tracker/"><img src="https://img.shields.io/badge/📦%20View%20on%20GitHub-28A745?style=for-the-badge" alt="View on GitHub"></a>
-</div>
+
+<br>
 
 <div align="center">
-  Built with ♥️ by sh1vansh!
+  <a href="https://github.com/ShiiiivanshSingh/fcb-score-tracker/archive/refs/heads/main.zip"><img src="https://img.shields.io/badge/🔽%20Download%20Extension-FF5733?style=for-the-badge" alt="Download"></a>
+  <a href="https://github.com/ShiiiivanshSingh/fcb-score-tracker/"><img src="https://img.shields.io/badge/📦%20View%20on%20GitHub-28A745?style=for-the-badge" alt="GitHub"></a>
 </div>
-#  fcb-score-tracker
 
-## 🛡️ API Key Setup
+<br>
 
-To use this extension, you need a free API key from [football-data.org](https://www.football-data.org/).
-
-### How to Get and Use Your API Key
-
-1. **Sign up at [football-data.org](https://www.football-data.org/)**
-   - Register for a free account and get your API key from your dashboard.
-2. **Create a file named `config.js` in the extension directory.**
-3. **Paste the following code into `config.js`:**
-   ```js
-   // config.js
-   export const API_KEY = 'YOUR_API_KEY_HERE';
-   ```
-   Replace `'YOUR_API_KEY_HERE'` with your actual API key.
-4. **Do not share your API key publicly!**
-   - `config.js` is already in `.gitignore` and will not be committed to your repository.
-5. **Reload the extension in your browser.**
-
-If you see an error in the extension, click the "See why" button to get troubleshooting help and API setup instructions in this README.
-
----
-
-## 🛠️ Troubleshooting & API Errors
-
-If you get an error or see the "See why" button in the extension, it usually means:
-- Your API key is missing or incorrect
-- You have exceeded your free API request limit
-- The football-data.org API is temporarily unavailable
-
-For detailed help, see the [API Key Setup](#️-api-key-setup) section above or visit the [GitHub repo README](https://github.com/ShiiiivanshSingh/fcb-score-tracker#️-api-key-setup).
+<div align="center">
+  Built with ♥️ by <a href="https://github.com/ShiiiivanshSingh">sh1vansh</a> — Visca el Barça! 🔵🔴
+</div>
