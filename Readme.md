@@ -11,6 +11,9 @@
   <a href="https://github.com/ShiiiivanshSingh/fcb-score-tracker/releases/tag/final"><img src="https://img.shields.io/badge/Chrome-Extension-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Chrome Extension"></a>
   <a href="#-getting-started"><img src="https://img.shields.io/badge/🔧%20How%20to%20Install-FF1411?style=for-the-badge" alt="How to Install"></a>
   <a href="#️-api-key-setup"><img src="https://img.shields.io/badge/⚠️%20API%20Key%20Setup-FF4136?style=for-the-badge&logo=github" alt="API Key Setup"></a>
+  <p align="center">
+  <img src="https://github.com/user-attachments/assets/d28635f1-b472-447e-869b-34fd6add29cf" width="397" height="572" />
+</p>
 
 </div>
 
