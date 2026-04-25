@@ -20,3 +20,4 @@ export async function saveSettings(patch) {
   await chrome.storage.local.set({ [SETTINGS_KEY]: updated });
   return updated;
 }
+

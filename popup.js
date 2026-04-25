@@ -3,11 +3,11 @@ import { getSettings, saveSettings } from './settings.js';
 
 const TEAM_ID = 81;
 const BASE_URL = 'https://api.football-data.org/v4';
-const REFRESH_INTERVAL = 60 * 1000;
-const REFRESH_INTERVAL_LIVE = 30 * 1000;
+const REFRESH_INTERVAL = 5 * 60 * 1000;      // 5 min when idle
+const REFRESH_INTERVAL_LIVE = 30 * 1000;     // 30 s during a live match
 const FETCH_TIMEOUT = 10000;
 const CACHE_KEY = 'fcb_popup_cache';  // stored in chrome.storage.local
-const CACHE_TTL = 60 * 1000;          // reuse cached data if < 60 s old
+const CACHE_TTL = 5 * 60 * 1000;      // 5 min — fixtures/standings don't change often
 
 let isFetching = false;
 let pulseInterval = null;
@@ -33,12 +33,13 @@ let goalToastTimer = null;
 async function saveCache(payload) {
   await chrome.storage.local.set({ [CACHE_KEY]: { ts: Date.now(), payload } });
 }
+// Returns { payload, stale } — stale=true when data is expired but still usable as fallback
 async function loadCache() {
   const data = await chrome.storage.local.get(CACHE_KEY);
   const entry = data[CACHE_KEY];
   if (!entry) return null;
-  if (Date.now() - entry.ts > CACHE_TTL) return null; // expired
-  return entry.payload;
+  if (Date.now() - entry.ts > CACHE_TTL) return { payload: entry.payload, stale: true };
+  return { payload: entry.payload, stale: false };
 }
 
 function fetchWithTimeout(url, options) {
@@ -73,9 +74,17 @@ function formatMatchTime(status, minute) {
 function getLiveScore(match) {
   // During an in-play match the authoritative score is in regularTime (or halfTime);
   // fullTime is only populated once the match finishes.
+  // NOTE: The API may return { home: null, away: null } for regularTime at half-time
+  // rather than null for the whole object — so we must check inner values explicitly.
   const s = match.score || {};
-  const home = s.regularTime?.home ?? s.halfTime?.home ?? s.fullTime?.home ?? '-';
-  const away = s.regularTime?.away ?? s.halfTime?.away ?? s.fullTime?.away ?? '-';
+  const rtHome = s.regularTime?.home;
+  const rtAway = s.regularTime?.away;
+  const htHome = s.halfTime?.home;
+  const htAway = s.halfTime?.away;
+  const ftHome = s.fullTime?.home;
+  const ftAway = s.fullTime?.away;
+  const home = rtHome != null ? rtHome : (htHome != null ? htHome : (ftHome != null ? ftHome : '-'));
+  const away = rtAway != null ? rtAway : (htAway != null ? htAway : (ftAway != null ? ftAway : '-'));
   return { home, away };
 }
 
@@ -195,11 +204,9 @@ function startLiveMinuteTicker(status, initialMinute, kickoffUtc) {
     const label = `${displayed}'`;
     const minEl = el('liveMinute');
     if (minEl) minEl.textContent = label;
-    // Also update the minute inside the live card comp label
-    const compEl = el('liveCompLabel');
-    if (compEl) {
-      compEl.textContent = compEl.textContent.replace(/\d+'$/, label);
-    }
+    // Update the clock badge under the score
+    const clockEl = el('liveClockBadge');
+    if (clockEl) clockEl.textContent = label;
   }, 60 * 1000);
 }
 
@@ -245,42 +252,62 @@ function renderLive(live, minute, detail) {
   const oppScore = isBarcaHome ? away : home;
   const comp = live.competition?.name || 'Match';
   const status = live.status;
-  const timeLabel = formatMatchTime(status, minute);
 
-  // Feature 9: venue + referee
+
+
+  // Clock label
+  const clockLabel = status === 'IN_PLAY' ? (minute != null ? `${minute}'` : 'LIVE')
+    : status === 'PAUSED' ? 'HT'
+    : status === 'HALF_TIME' ? 'HT'
+    : status === 'FINISHED' ? 'FT' : '';
+
+  // Opponent initials for badge (we don't have their logo)
+  const oppInitials = opp.slice(0, 3).toUpperCase();
+
+  // Status pill
+  let statusPill = '';
+  if (status === 'IN_PLAY')   statusPill = '<span class="live-status-pill in-play">● LIVE</span>';
+  if (status === 'HALF_TIME') statusPill = '<span class="live-status-pill half-time">HALF TIME</span>';
+  if (status === 'PAUSED')    statusPill = '<span class="live-status-pill paused">⏸ HT</span>';
+  if (status === 'FINISHED')  statusPill = '<span class="live-status-pill finished">FULL TIME</span>';
+
+  // Venue / referee
   const venue = detail?.venue || null;
   const referee = detail?.referees?.[0]?.name || null;
   const metaLine = (venue || referee)
     ? `<div class="live-meta-line">${[venue ? '🏟 ' + venue : '', referee ? '🟡 ' + referee : ''].filter(Boolean).join('  ·  ')}</div>`
     : '';
 
-  // Feature 1: lineup toggle
+  // Lineup toggle
   const hasLineup = detail?.lineups?.length >= 2;
   const lineupBtn = hasLineup
     ? `<div class="live-lineup-row"><button class="lineup-toggle-btn" id="lineupToggleBtn">${showLineup ? 'Hide Lineup ▲' : 'Lineup ▼'}</button></div>`
     : '';
 
-  let statusPill = '';
-  if (status === 'IN_PLAY') statusPill = '<span class="live-status-pill in-play">● LIVE</span>';
-  if (status === 'HALF_TIME') statusPill = '<span class="live-status-pill half-time">HALF TIME</span>';
-  if (status === 'PAUSED') statusPill = '<span class="live-status-pill paused">⏸ PAUSED</span>';
-  if (status === 'FINISHED') statusPill = '<span class="live-status-pill finished">FULL TIME</span>';
-
   card.className = 'card-live';
   card.innerHTML = `
-    <div class="live-inner">
-      <div class="live-header-row">
-        <span class="live-comp-label" id="liveCompLabel">${comp}${timeLabel ? ' · ' + timeLabel : ''}</span>
-        ${statusPill}
-      </div>
-      <div class="live-scoreline">
-        <span class="live-team-name">${barca}</span>
-        <span class="live-score-num">${barcaScore >= 0 ? barcaScore : '–'}–${oppScore >= 0 ? oppScore : '–'}</span>
-        <span class="live-team-name away">${opp}</span>
-      </div>
-      ${metaLine}
-      ${lineupBtn}
+    <div class="live-topbar">
+      <span class="live-comp-label">${comp}</span>
+      ${statusPill}
     </div>
+    <div class="live-matchup">
+      <div class="live-team-section home-section">
+        <div class="live-team-badge-circle barca-circle">
+          <img src="fcb.svg" class="live-crest-img" alt="FCB">
+        </div>
+        <div class="live-team-name-big">${barca}</div>
+      </div>
+      <div class="live-center-section">
+        <div class="live-big-score" id="liveScoreNum">${barcaScore !== '-' ? barcaScore : '–'}<span class="score-sep">–</span>${oppScore !== '-' ? oppScore : '–'}</div>
+        ${clockLabel ? `<div class="live-minute-badge" id="liveClockBadge">${clockLabel}</div>` : ''}
+      </div>
+      <div class="live-team-section away-section">
+        <div class="live-team-badge-circle opp-circle">${oppInitials}</div>
+        <div class="live-team-name-big away">${opp}</div>
+      </div>
+    </div>
+    ${metaLine ? `<div class="live-footer-meta">${metaLine.replace(/<\/?div[^>]*>/g, '')}</div>` : ''}
+    ${lineupBtn}
   `;
 
   if (hasLineup) {
@@ -290,7 +317,7 @@ function renderLive(live, minute, detail) {
   }
 
   el('liveIndicator').classList.add('visible');
-  el('liveMinute').textContent = timeLabel || 'LIVE';
+  el('liveMinute').textContent = clockLabel || 'LIVE';
   startPulse();
   startLiveMinuteTicker(status, minute, live.utcDate);
 }
@@ -531,47 +558,125 @@ async function renderSettingsPanel() {
   bind('togFullTime', 'notifyFullTime');
 }
 
+// Lightweight live check: only 2 requests. If a match is found, triggers a full fetch.
+// Used when cache is fresh but shows no live match — catches matches that started
+// since the last full fetch without burning all 6+ quota slots every popup open.
+async function quickLiveCheck() {
+  try {
+    const headers = { 'X-Auth-Token': API_KEY };
+    const [inPlayRes, pausedRes] = await Promise.all([
+      fetchWithTimeout(`${BASE_URL}/teams/${TEAM_ID}/matches?status=IN_PLAY`, { headers }),
+      fetchWithTimeout(`${BASE_URL}/teams/${TEAM_ID}/matches?status=PAUSED`, { headers }),
+    ]);
+    if (inPlayRes.status === 429 || pausedRes.status === 429) return;
+    const [inPlayData, pausedData] = await Promise.all([
+      inPlayRes.ok ? inPlayRes.json() : Promise.resolve({ matches: [] }),
+      pausedRes.ok ? pausedRes.json() : Promise.resolve({ matches: [] }),
+    ]);
+    const liveMatches = [...(inPlayData.matches || []), ...(pausedData.matches || [])];
+    if (liveMatches.length > 0) {
+      // A match just started — do the full fetch to get score + detail
+      await fetchAndRender(true);
+    }
+  } catch (_) { }
+}
+
 async function fetchAndRender(force = false) {
   if (isFetching) return;
 
-  // ── Cache check: skip all API calls if data is fresh enough ──────────
+  // ── Tiered cache strategy ─────────────────────────────────────────────
+  // Free tier: 10 req/min. Full fetch costs 6-7 requests. Strategy:
+  //   • Cache fresh + no live match  → render cache + quick live check (2 req)
+  //   • Cache fresh + live match     → always full fetch (live scores need current data)
+  //   • Cache stale / missing        → full fetch
   if (!force) {
     const cached = await loadCache();
-    if (cached) {
-      renderFromPayload(cached);
+    if (cached && !cached.stale) {
+      renderFromPayload(cached.payload); // instant display
+      const cachedHasLive = (cached.payload.liveData?.matches?.length ?? 0) > 0;
+      if (!cachedHasLive) {
+        // Only spend 2 requests to check if a match started since last cache save
+        await quickLiveCheck();
+      } else {
+        // Live match was showing — always get fresh data
+        await fetchAndRender(true);
+      }
       return;
+    }
+    if (cached && cached.stale) {
+      renderFromPayload(cached.payload); // show stale data while full fetch runs
     }
   }
 
   isFetching = true;
   setReloadSpinning(true);
-  renderLoading();
+  const hasCachedContent = !force && (await loadCache()) !== null;
+  if (!hasCachedContent) renderLoading();
 
   try {
     const headers = { 'X-Auth-Token': API_KEY };
 
-    const [liveRes, fixturesRes, resultsRes, standingsRes, uclRes, scorersRes] = await Promise.all([
-      fetchWithTimeout(`${BASE_URL}/teams/${TEAM_ID}/matches?status=IN_PLAY,PAUSED,HALF_TIME`, { headers }),
+    // Only 2 live-status requests: IN_PLAY and PAUSED (HALF_TIME is not a valid filter —
+    // football-data.org uses PAUSED for both half-time and VAR stoppages)
+    const [liveInPlayRes, livePausedRes, fixturesRes, resultsRes, standingsRes, uclRes] = await Promise.all([
+      fetchWithTimeout(`${BASE_URL}/teams/${TEAM_ID}/matches?status=IN_PLAY`, { headers }),
+      fetchWithTimeout(`${BASE_URL}/teams/${TEAM_ID}/matches?status=PAUSED`, { headers }),
       fetchWithTimeout(`${BASE_URL}/teams/${TEAM_ID}/matches?status=SCHEDULED&limit=20`, { headers }),
       fetchWithTimeout(`${BASE_URL}/teams/${TEAM_ID}/matches?status=FINISHED&limit=20`, { headers }),
       fetchWithTimeout(`${BASE_URL}/competitions/PD/standings`, { headers }),
       fetchWithTimeout(`${BASE_URL}/competitions/CL/standings`, { headers }),
-      fetchWithTimeout(`${BASE_URL}/competitions/PD/scorers?limit=10`, { headers }),
     ]);
 
-    if ([liveRes, fixturesRes, resultsRes].some(r => r.status === 403)) {
+    // Merge live statuses
+    const liveMatches = [
+      ...(liveInPlayRes.ok ? (await liveInPlayRes.json()).matches || [] : []),
+      ...(livePausedRes.ok ? (await livePausedRes.json()).matches || [] : []),
+    ];
+    const liveData = { matches: liveMatches };
+
+    if ([liveInPlayRes, fixturesRes, resultsRes].some(r => r.status === 403)) {
       renderError(true);
       return;
     }
 
-    const [liveData, fixturesData, resultsData, standingsData, uclData, scorersData] = await Promise.all([
-      liveRes.json(), fixturesRes.json(), resultsRes.json(),
+    // 429 rate-limit: show last cached data (even if stale) instead of an error
+    if ([liveInPlayRes, fixturesRes, resultsRes].some(r => r.status === 429)) {
+      const staleCache = await loadCache();
+      if (staleCache) renderFromPayload(staleCache.payload);
+      return;
+    }
+
+    // Scorers: separate longer-lived cache (30 min) to avoid rate limits
+    const SCORERS_KEY = 'fcb_scorers_cache';
+    const SCORERS_TTL = 30 * 60 * 1000;
+    let scorersData = null;
+    const scorersStored = await chrome.storage.local.get(SCORERS_KEY);
+    const scorersEntry = scorersStored[SCORERS_KEY];
+    if (scorersEntry && (Date.now() - scorersEntry.ts) < SCORERS_TTL) {
+      scorersData = scorersEntry.data;
+    } else {
+      try {
+        const scorersRes = await fetchWithTimeout(`${BASE_URL}/competitions/PD/scorers?limit=10`, { headers });
+        if (scorersRes.ok) {
+          scorersData = await scorersRes.json();
+          await chrome.storage.local.set({ [SCORERS_KEY]: { ts: Date.now(), data: scorersData } });
+        }
+      } catch (_) { }
+    }
+
+    const [fixturesData, resultsData, standingsData, uclData] = await Promise.all([
+      fixturesRes.json(), resultsRes.json(),
       standingsRes.ok ? standingsRes.json() : Promise.resolve(null),
       uclRes.ok ? uclRes.json() : Promise.resolve(null),
-      scorersRes.ok ? scorersRes.json() : Promise.resolve(null),
     ]);
 
-    const live = liveData.matches?.length ? liveData.matches[0] : null;
+    const rawLive = liveData.matches?.length ? liveData.matches[0] : null;
+    const live = rawLive && (
+      rawLive.status === 'IN_PLAY' ||
+      rawLive.status === 'PAUSED' ||
+      rawLive.status === 'HALF_TIME' ||
+      (rawLive.status === 'FINISHED' && (Date.now() - new Date(rawLive.utcDate)) < 2 * 3600 * 1000)
+    ) ? rawLive : null;
 
     let liveMinute = null;
     let liveGoals = [];
@@ -592,11 +697,14 @@ async function fetchAndRender(force = false) {
 
     const payload = { liveData, fixturesData, resultsData, standingsData, uclData, scorersData, liveMinute, liveGoals, liveBookings, liveDetail, live };
 
-    // Don't cache live-match data — always want fresh scores during a match
-    if (!live) await saveCache(payload);
+    // Never cache live-match data — always want fresh scores during a match
+    if (live) {
+      await chrome.storage.local.remove(CACHE_KEY);
+    } else {
+      await saveCache(payload);
+    }
 
     renderFromPayload(payload);
-
     resetRefreshInterval(live ? REFRESH_INTERVAL_LIVE : REFRESH_INTERVAL);
 
   } catch (e) {
@@ -609,7 +717,7 @@ async function fetchAndRender(force = false) {
 
 function renderFromPayload(payload) {
   const { liveData, fixturesData, resultsData, standingsData, uclData, scorersData,
-          liveMinute, liveGoals, liveBookings, liveDetail } = payload;
+    liveMinute, liveGoals, liveBookings, liveDetail } = payload;
 
   // Re-derive live from liveData in case payload came from cache
   const live = liveData?.matches?.length ? liveData.matches[0] : null;
@@ -636,7 +744,7 @@ function renderFromPayload(payload) {
       const scorer = g.scorer?.name?.split(' ').pop() || '?';
       const isBarcaHome = live.homeTeam.id === TEAM_ID;
       const barcaG = liveGoals.filter(x => (x.team?.id === TEAM_ID) !== (x.type === 'OWN_GOAL')).length;
-      const oppG   = liveGoals.filter(x => (x.team?.id !== TEAM_ID) !== (x.type === 'OWN_GOAL')).length;
+      const oppG = liveGoals.filter(x => (x.team?.id !== TEAM_ID) !== (x.type === 'OWN_GOAL')).length;
       showGoalToast(scorer, isBarcaGoal, isBarcaHome ? barcaG : oppG, isBarcaHome ? oppG : barcaG);
     }
   }

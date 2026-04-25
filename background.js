@@ -1,40 +1,42 @@
 import { API_KEY } from './config.js';
 import { getSettings } from './settings.js';
 
-const TEAM_ID  = 86;
+const TEAM_ID = 81;
 const BASE_URL = 'https://api.football-data.org/v4';
 
 // Alarm names
-const ALARM_LIVE   = 'fcb_live_poll';   // fires every 1 min while live
-const ALARM_IDLE   = 'fcb_idle_poll';   // fires every 5 min when no match
+const ALARM_LIVE = 'fcb_live_poll';   // fires every 1 min while live
+const ALARM_IDLE = 'fcb_idle_poll';   // fires every 10 min when no match
 
 /* ── Notification IDs ───────────────────────────────────────── */
-// Using fixed IDs lets Chrome replace/update a notification instead
-// of stacking duplicates.
 const N_MATCH_START = 'fcb_match_start';
-const N_HALF_TIME   = 'fcb_half_time';
-const N_FULL_TIME   = 'fcb_full_time';
-const N_GOAL        = 'fcb_goal';       // replaced each time a goal lands
+const N_HALF_TIME = 'fcb_half_time';
+const N_FULL_TIME = 'fcb_full_time';
+const N_GOAL = 'fcb_goal';
 
 /* ── State keys stored in chrome.storage.session ───────────── */
-// session storage is cleared when the browser/service-worker restarts,
-// which is exactly what we want — fresh state per browser session.
-const KEY_LAST_STATUS    = 'bg_lastStatus';
-const KEY_LAST_GOAL_CNT  = 'bg_lastGoalCount';
-const KEY_LAST_MATCH_ID  = 'bg_lastMatchId';
-const KEY_LAST_SCORE     = 'bg_lastScore';
-const KEY_PREMATCH_ID    = 'bg_prematchNotified'; // Feature 15
+const KEY_LAST_STATUS = 'bg_lastStatus';
+const KEY_LAST_GOAL_CNT = 'bg_lastGoalCount';
+const KEY_LAST_MATCH_ID = 'bg_lastMatchId';
+const KEY_LAST_SCORE = 'bg_lastScore';
+const KEY_PREMATCH_ID = 'bg_prematchNotified';
 
 /* ── Helpers ────────────────────────────────────────────────── */
 function isHome(match) { return match.homeTeam.id === TEAM_ID; }
 
 function getScore(match) {
   const s = match.score || {};
-  const home = s.regularTime?.home ?? s.halfTime?.home ?? s.fullTime?.home ?? 0;
-  const away = s.regularTime?.away ?? s.halfTime?.away ?? s.fullTime?.away ?? 0;
+  const rtHome = s.regularTime?.home;
+  const rtAway = s.regularTime?.away;
+  const htHome = s.halfTime?.home;
+  const htAway = s.halfTime?.away;
+  const ftHome = s.fullTime?.home;
+  const ftAway = s.fullTime?.away;
+  const home = rtHome != null ? rtHome : (htHome != null ? htHome : (ftHome != null ? ftHome : 0));
+  const away = rtAway != null ? rtAway : (htAway != null ? htAway : (ftAway != null ? ftAway : 0));
   return {
     barca: isHome(match) ? home : away,
-    opp:   isHome(match) ? away : home,
+    opp: isHome(match) ? away : home,
   };
 }
 
@@ -47,27 +49,27 @@ async function getState() {
     KEY_LAST_STATUS, KEY_LAST_GOAL_CNT, KEY_LAST_MATCH_ID, KEY_LAST_SCORE, KEY_PREMATCH_ID,
   ]);
   return {
-    lastStatus:        data[KEY_LAST_STATUS]   ?? null,
-    lastGoalCnt:       data[KEY_LAST_GOAL_CNT] ?? 0,
-    lastMatchId:       data[KEY_LAST_MATCH_ID] ?? null,
-    lastScore:         data[KEY_LAST_SCORE]    ?? null,
-    prematchNotified:  data[KEY_PREMATCH_ID]   ?? null,
+    lastStatus: data[KEY_LAST_STATUS] ?? null,
+    lastGoalCnt: data[KEY_LAST_GOAL_CNT] ?? 0,
+    lastMatchId: data[KEY_LAST_MATCH_ID] ?? null,
+    lastScore: data[KEY_LAST_SCORE] ?? null,
+    prematchNotified: data[KEY_PREMATCH_ID] ?? null,
   };
 }
 
 async function setState(patch) {
   const mapped = {};
-  if ('lastStatus'       in patch) mapped[KEY_LAST_STATUS]   = patch.lastStatus;
-  if ('lastGoalCnt'      in patch) mapped[KEY_LAST_GOAL_CNT] = patch.lastGoalCnt;
-  if ('lastMatchId'      in patch) mapped[KEY_LAST_MATCH_ID] = patch.lastMatchId;
-  if ('lastScore'        in patch) mapped[KEY_LAST_SCORE]    = patch.lastScore;
-  if ('prematchNotified' in patch) mapped[KEY_PREMATCH_ID]   = patch.prematchNotified;
+  if ('lastStatus' in patch) mapped[KEY_LAST_STATUS] = patch.lastStatus;
+  if ('lastGoalCnt' in patch) mapped[KEY_LAST_GOAL_CNT] = patch.lastGoalCnt;
+  if ('lastMatchId' in patch) mapped[KEY_LAST_MATCH_ID] = patch.lastMatchId;
+  if ('lastScore' in patch) mapped[KEY_LAST_SCORE] = patch.lastScore;
+  if ('prematchNotified' in patch) mapped[KEY_PREMATCH_ID] = patch.prematchNotified;
   await chrome.storage.session.set(mapped);
 }
 
 function notify(id, title, message, iconPath = 'icon128.png') {
   chrome.notifications.create(id, {
-    type:    'basic',
+    type: 'basic',
     iconUrl: iconPath,
     title,
     message,
@@ -80,45 +82,47 @@ function notify(id, title, message, iconPath = 'icon128.png') {
 async function poll() {
   try {
     const headers = { 'X-Auth-Token': API_KEY };
-    const res = await fetch(
-      `${BASE_URL}/teams/${TEAM_ID}/matches?status=IN_PLAY,PAUSED,HALF_TIME,FINISHED&limit=5`,
-      { headers }
-    );
-    if (!res.ok) return;
-    const data = await res.json();
 
-    // Find the most recent relevant match (today or very recent)
-    const candidates = (data.matches || [])
-      .filter(m => {
-        const d = new Date(m.utcDate);
-        const now = new Date();
-        const hoursDiff = (now - d) / 3600000;
-        return hoursDiff < 6; // only matches within last 6 h
-      })
-      .sort((a, b) => new Date(b.utcDate) - new Date(a.utcDate));
+    // Use two separate requests — API v4 doesn't accept comma-separated statuses
+    const [inPlayRes, pausedRes] = await Promise.all([
+      fetch(`${BASE_URL}/teams/${TEAM_ID}/matches?status=IN_PLAY`, { headers }),
+      fetch(`${BASE_URL}/teams/${TEAM_ID}/matches?status=PAUSED`, { headers }),
+    ]);
 
-    const match = candidates[0] || null;
+    // Back off silently on rate limit
+    if (inPlayRes.status === 429 || pausedRes.status === 429) return;
+    if (!inPlayRes.ok && !pausedRes.ok) return;
+
+    const [inPlayData, pausedData] = await Promise.all([
+      inPlayRes.ok ? inPlayRes.json() : Promise.resolve({ matches: [] }),
+      pausedRes.ok ? pausedRes.json() : Promise.resolve({ matches: [] }),
+    ]);
+
+    const allLive = [
+      ...(inPlayData.matches || []),
+      ...(pausedData.matches || []),
+    ];
+
+    const match = allLive[0] || null;
     const state = await getState();
 
     if (!match) {
-      // No recent match — if we previously had a live match, reset
-      if (state.lastStatus === 'IN_PLAY' || state.lastStatus === 'HALF_TIME') {
+      // No live match — check for pre-match alert and reset state
+      if (state.lastStatus === 'IN_PLAY' || state.lastStatus === 'PAUSED') {
         await setState({ lastStatus: null, lastGoalCnt: 0, lastMatchId: null, lastScore: null });
       }
+      await checkPreMatch(headers, state);
       scheduleIdleAlarm();
       return;
     }
 
-    const matchId  = match.id;
-    const status   = match.status;
-    const opp      = getOpponent(match);
-    const score    = getScore(match);
-
-    // New match or same match continuing
+    const matchId = match.id;
+    const status = match.status;
+    const opp = getOpponent(match);
+    const score = getScore(match);
     const isNewMatch = matchId !== state.lastMatchId;
 
     if (isNewMatch) {
-      // Reset per-match state
       await setState({ lastMatchId: matchId, lastStatus: null, lastGoalCnt: 0, lastScore: null });
     }
 
@@ -141,37 +145,21 @@ async function poll() {
       return;
     }
 
-    // ── Half Time ────────────────────────────────────────────
-    if (status === 'HALF_TIME' && state.lastStatus !== 'HALF_TIME') {
+    // ── Half Time (API reports as PAUSED) ────────────────────
+    if (status === 'PAUSED' && state.lastStatus === 'IN_PLAY') {
       const s = await getSettings();
       if (s.notifyHalfTime) {
         notify(N_HALF_TIME, '🕑 Half Time', `Barça ${score.barca} – ${score.opp} ${opp}`);
       }
-      await setState({ lastStatus: 'HALF_TIME', lastScore: score });
-      return;
-    }
-
-    // ── Full Time ────────────────────────────────────────────
-    if (status === 'FINISHED' && state.lastStatus !== 'FINISHED') {
-      const s = await getSettings();
-      if (s.notifyFullTime) {
-        const result = score.barca > score.opp ? '🏆 Win!' : score.barca < score.opp ? '😞 Loss' : '🤝 Draw';
-        notify(
-          N_FULL_TIME,
-          `${result} · Full Time`,
-          `Barça ${score.barca} – ${score.opp} ${opp} · ${match.competition?.name || 'FT'}`
-        );
-      }
-      await setState({ lastStatus: 'FINISHED', lastScore: score });
-      scheduleIdleAlarm();
+      await setState({ lastStatus: 'PAUSED', lastScore: score });
       return;
     }
 
     // ── Goal events (need detailed match data for scorer info) ──
     if (status === 'IN_PLAY' || status === 'PAUSED') {
-      // Fetch match detail to count goals and get scorer names
       try {
         const detailRes = await fetch(`${BASE_URL}/matches/${matchId}`, { headers });
+        if (detailRes.status === 429) { scheduleLiveAlarm(); return; }
         if (detailRes.ok) {
           const detail = await detailRes.json();
           const goals = detail.goals || [];
@@ -187,9 +175,9 @@ async function poll() {
                 const goalType = g.type === 'OWN_GOAL' ? ' (OG)' : g.type === 'PENALTY' ? ' (P)' : '';
                 const goalsUpToThis = goals.slice(0, state.lastGoalCnt + newGoals.indexOf(g) + 1);
                 const barcaTotal = goalsUpToThis.filter(x => x.team?.id === TEAM_ID && x.type !== 'OWN_GOAL').length
-                                 + goalsUpToThis.filter(x => x.team?.id !== TEAM_ID && x.type === 'OWN_GOAL').length;
-                const oppTotal   = goalsUpToThis.filter(x => x.team?.id !== TEAM_ID && x.type !== 'OWN_GOAL').length
-                                 + goalsUpToThis.filter(x => x.team?.id === TEAM_ID && x.type === 'OWN_GOAL').length;
+                  + goalsUpToThis.filter(x => x.team?.id !== TEAM_ID && x.type === 'OWN_GOAL').length;
+                const oppTotal = goalsUpToThis.filter(x => x.team?.id !== TEAM_ID && x.type !== 'OWN_GOAL').length
+                  + goalsUpToThis.filter(x => x.team?.id === TEAM_ID && x.type === 'OWN_GOAL').length;
                 if (isBarcaGoal && g.type !== 'OWN_GOAL') {
                   notify(`${N_GOAL}_${totalGoals}`, `🔵🔴 GOAL! ${scorer}${goalType} ${g.minute}'`, `Barça ${barcaTotal} – ${oppTotal} ${opp}`);
                 } else {
@@ -200,36 +188,10 @@ async function poll() {
             await setState({ lastGoalCnt: totalGoals, lastScore: score });
           }
         }
-      } catch (_) {}
+      } catch (_) { }
 
       await setState({ lastStatus: status });
       scheduleLiveAlarm();
-    }
-
-    // ── Feature 15: Pre-match alarm (15 min before kickoff) ───
-    if (!match) {
-      try {
-        const schRes = await fetch(
-          `${BASE_URL}/teams/${TEAM_ID}/matches?status=SCHEDULED&limit=5`,
-          { headers }
-        );
-        if (schRes.ok) {
-          const schData = await schRes.json();
-          const next = (schData.matches || [])
-            .filter(m => m.status === 'SCHEDULED' || m.status === 'TIMED')
-            .sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate))[0];
-          if (next) {
-            const mins = (new Date(next.utcDate) - Date.now()) / 60000;
-            const prevNotified = state.prematchNotified;
-            if (mins >= 14 && mins <= 16 && prevNotified !== next.id) {
-              const opp2 = isHome(next) ? next.awayTeam.shortName : next.homeTeam.shortName;
-              notify('fcb_prematch', '⏰ Barça kick off soon!',
-                `vs ${opp2} in ~15 min · ${next.competition?.name || ''}`);
-              await setState({ prematchNotified: next.id });
-            }
-          }
-        }
-      } catch (_) {}
     }
 
   } catch (e) {
@@ -237,6 +199,29 @@ async function poll() {
   }
 }
 
+/* ── Pre-match alert (15 min before kickoff) ────────────────── */
+async function checkPreMatch(headers, state) {
+  try {
+    const schRes = await fetch(
+      `${BASE_URL}/teams/${TEAM_ID}/matches?status=SCHEDULED&limit=5`,
+      { headers }
+    );
+    if (!schRes.ok) return;
+    const schData = await schRes.json();
+    const next = (schData.matches || [])
+      .filter(m => m.status === 'SCHEDULED' || m.status === 'TIMED')
+      .sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate))[0];
+    if (next) {
+      const mins = (new Date(next.utcDate) - Date.now()) / 60000;
+      if (mins >= 14 && mins <= 16 && state.prematchNotified !== next.id) {
+        const opp2 = isHome(next) ? next.awayTeam.shortName : next.homeTeam.shortName;
+        notify('fcb_prematch', '⏰ Barça kick off soon!',
+          `vs ${opp2} in ~15 min · ${next.competition?.name || ''}`);
+        await setState({ prematchNotified: next.id });
+      }
+    }
+  } catch (_) { }
+}
 
 /* ── Alarm management ───────────────────────────────────────── */
 function scheduleLiveAlarm() {
@@ -245,7 +230,6 @@ function scheduleLiveAlarm() {
     if (!hasLive) {
       chrome.alarms.create(ALARM_LIVE, { periodInMinutes: 1 });
     }
-    // Cancel the slow idle alarm while live
     chrome.alarms.clear(ALARM_IDLE);
   });
 }
@@ -254,9 +238,9 @@ function scheduleIdleAlarm() {
   chrome.alarms.getAll(alarms => {
     const hasIdle = alarms.some(a => a.name === ALARM_IDLE);
     if (!hasIdle) {
-      chrome.alarms.create(ALARM_IDLE, { periodInMinutes: 5 });
+      // 10 min idle poll — gives popup plenty of headroom within the 10 req/min free tier
+      chrome.alarms.create(ALARM_IDLE, { periodInMinutes: 10 });
     }
-    // Cancel live alarm when no match
     chrome.alarms.clear(ALARM_LIVE);
   });
 }
@@ -264,7 +248,7 @@ function scheduleIdleAlarm() {
 /* ── Extension lifecycle ────────────────────────────────────── */
 chrome.runtime.onInstalled.addListener(() => {
   scheduleIdleAlarm();
-  poll(); // run immediately on install/reload
+  poll();
 });
 
 chrome.runtime.onStartup.addListener(() => {
